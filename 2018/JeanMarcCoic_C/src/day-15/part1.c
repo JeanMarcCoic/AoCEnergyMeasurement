@@ -64,10 +64,11 @@ static int unit_compare(const void *unit1_p, const void *unit2_p)
 typedef struct shortest_t {
     int dist;
     int x, y;
+    int x0, y0;
 } shortest_t;
 
 static void do_path_one(int nth, int x, int y, int current_distance,
-                        shortest_t *path)
+                        shortest_t *path, int x0, int y0)
 {
     //printf("do:  %d  %d,%d  d:%d, path:%d %d,%d\n",
     //       nth, x, y, current_distance, path->dist, path->x, path->y);
@@ -82,14 +83,20 @@ static void do_path_one(int nth, int x, int y, int current_distance,
                 path->dist = current_distance;
                 path->x = x;
                 path->y = y;
+                path->x0 = x0;
+                path->y0 = y0;
             } else if (current_distance == path->dist) {
-                if (y < path->y) {
+                if (y0 < path->y0) {
                     path->x = x;
                     path->y = y;
-                } else if (y == path->y) {
-                    if (x < path->x) {
+                    path->x0 = x0;
+                    path->y0 = y0;
+                } else if (y0 == path->y0) {
+                    if (x0 < path->x0) {
                         path->x = x;
                         path->y = y;
+                        path->x0 = x0;
+                        path->y0 = y0;
                     }
                 }
             }
@@ -106,10 +113,10 @@ static void do_path_one(int nth, int x, int y, int current_distance,
     }
     pathfinding_map[x][y] = current_distance;
 
-    do_path_one(nth, x - 1, y, current_distance + 1, path);
-    do_path_one(nth, x + 1, y, current_distance + 1, path);
-    do_path_one(nth, x, y - 1, current_distance + 1, path);
-    do_path_one(nth, x, y + 1, current_distance + 1, path);
+    do_path_one(nth, x - 1, y, current_distance + 1, path, x0, y0);
+    do_path_one(nth, x + 1, y, current_distance + 1, path, x0, y0);
+    do_path_one(nth, x, y - 1, current_distance + 1, path, x0, y0);
+    do_path_one(nth, x, y + 1, current_distance + 1, path, x0, y0);
 }
 
 static void do_pathfinding(int nth, shortest_t *path)
@@ -157,10 +164,10 @@ static void do_pathfinding(int nth, shortest_t *path)
             int x = units[i]->x;
             int y = units[i]->y;
 
-            do_path_one(nth, x, y - 1, 1, path);
-            do_path_one(nth, x - 1, y, 1, path);
-            do_path_one(nth, x + 1, y, 1, path);
-            do_path_one(nth, x, y + 1, 1, path);
+            do_path_one(nth, x, y - 1, 1, path, x, y - 1);
+            do_path_one(nth, x - 1, y, 1, path, x - 1, y);
+            do_path_one(nth, x + 1, y, 1, path, x + 1, y);
+            do_path_one(nth, x, y + 1, 1, path, x, y + 1);
         }
     }
 
